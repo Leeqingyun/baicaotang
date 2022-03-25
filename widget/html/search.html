@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+        <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+        <style type="text/css">
+        body{
+            background-size: 100% 100%;
+            background-Repeat: no-repeat;
+            position: absolute;
+            bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-attachment: fixed;
+        }
+        .top{
+            height: 40px;
+            border: 1px solid black;
+            align-content: center;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px;
+            flex-direction: row;
+        }         
+        .input-cy{
+            height: 40px;
+            width: 100%;
+            background-color: white;
+            font-size: 20px;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px;
+        }
+        .mid{
+            padding-top: 15px;
+            border-bottom: 1px solid black;
+            height: 75px;
+        }
+        .feed{
+            background-color: rgb(247, 221, 150);
+            opacity: 0.8;
+            display:flex ;
+            height: 100px;
+            flex-direction: row;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .feed-left{
+            border-radius: 50%;
+		    overflow: hidden;
+            height: 90px;
+            width: 90px;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        .feed-main{
+            flex: 1;
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        .feed-right{
+            height: 40px;
+            width: 40px;
+            margin-right: 10px;
+            margin-top: 30px;
+            align-content: center;
+        }
+        .button1{
+            background-color: rgb(245, 214, 149);
+            height: 40px;
+            width: 100px;
+            margin-left: 100px;
+            margin-top: 10px;
+            font-size: 20px;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px;
+        }
+        .button2{
+            background-color: rgb(245, 214, 149);
+            height: 40px;
+            width: 100px;
+            margin-top: 10px;
+            margin-left: 50px;
+            font-size: 20px;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px;
+        }
+
+        .searchname{
+            border: 1px solid black;
+            height: 30px;
+            width: 100px;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px;
+            margin-left: 5px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        </style>
+    </head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title></title>
+        <meta charset="utf-8" />
+        <script src="Scripts/vue.js"></script>
+    </head>
+    <body>
+    <div id="app">
+        <div class="top">
+            <input id="data" type="search" autocomplete="off" name="baike-search" placeholder="请输入草药（方剂）的名称或功效" class="input-cy">
+        </div> 
+        <button type="button" class="button1" @click="getFjdata()">搜索方剂</button>
+        <button type="button" class="button2" @click="getCydata()">搜索草药</button>
+        <div class="mid"> 
+            <div style="font-size:20px">热门搜索</div> 
+            <div class="searchcount" v-for="searchcount in searchcounts" @click="searchclick(searchcount.searchname)">
+                <div class="searchname"style="float:left">{{searchcount.searchname}}</div>
+            </div>
+        </div>
+        <div class="feeds">
+            <div class="feed" v-for="feed in feeds" @click="to(feed)">
+                <img class="feed-left" v-for="photo in feed.photos" :src="photo" alt="">
+                <div class="feed-main">
+                    <div class="feed-name" style="font-size: 25px;">{{feed.name}}</div>
+                    <div class="feed-content">功效：{{feed.efficacy}}</div>
+                </div>
+                <img class="feed-right" style="height: 30px;width: 30px;" src="../image/sc.png" alt="">
+            </div>
+        </div>
+    </div>
+    </body>
+    <script type="text/javascript" src="../script/vue.min.js"></script>
+    <script type="text/javascript">
+     apiready = function() {
+        addNavClickSC();
+        initVue();
+    };
+        function addNavClickSC()
+        {
+        api.addEventListener({
+            name:'navitembtn'
+        },function(ret, err){
+            api.closeWin();
+            });
+        }
+        function initVue(){
+        vm=new Vue({
+            el:"#app",
+            data:{
+                feeds:[],
+                mainindex:2,
+                searchrecord:[],
+                searchcounts:[],
+            },
+            mounted:function(){
+                this.getSearchCount();
+            },
+            methods:{
+                getCydata:function(){
+                    var index=document.getElementById('data').value;
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/feeds/getFeedByconditions?name='+index
+                    }, function(ret, err){
+                        vm.feeds=ret.data;
+                        vm.mainindex=0;
+                    })
+                },
+                getFjdata:function(){
+                    var index=document.getElementById('data').value;
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/prescriptions/getPrescriptionsByCon?name='+index
+                    }, function(ret, err){
+                        vm.feeds=ret.data;
+                        vm.mainindex=1;
+                    })
+                },
+                getSearchCount:function(){
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/searchrecords/getSearchCounts'
+                    }, function(ret, err){
+                        vm.searchcounts=ret.data;
+                        console.log(JSON.stringify(vm.searchcounts));
+                    })
+                },
+                to:function(feedd){
+                    if(vm.mainindex==0){
+                        var user = {
+	                    name : feedd.name,
+                        id:feedd.id,
+                        }
+                        localStorage.setItem("user",JSON.stringify(user)); //需要先转换为JSON
+                        api.openTabLayout({
+                        name: feedd.name,
+                        url: './main.html',
+                        title: feedd.name,
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }]
+                        }
+                    });                    
+                    }
+                    else if(vm.mainindex==1){
+                        var user = {
+	                    name : feedd.name,
+                        id:feedd.id,
+                        }
+                        localStorage.setItem("user",JSON.stringify(user)); //需要先转换为JSON
+                        api.openTabLayout({
+                        name: feedd.name,
+                        url: './fjmain.html',
+                        title: feedd.name,
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }]
+                        }
+                    });
+                    }
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/searchrecords/getSearchRecord?name='+feedd.name
+                    }, function(ret, err){
+                        vm.searchrecord=ret.data;
+                        //console.log(JSON.stringify(vm.searchrecord));
+                        if(vm.searchrecord=='')
+                        {
+                            api.ajax({
+                                url:'https://a6192799043919-dev.apicloud-saas.com/api/searchrecords/postSearchRecode?name='+feedd.name+'&times=1&id='
+                            }, function(ret, err){
+                                console.log(JSON.stringify("插入成功"));
+                            })
+                        }
+                        else{
+                            var times=parseInt(vm.searchrecord[0].searchtimes)+1;
+                            api.ajax({
+                                url:'https://a6192799043919-dev.apicloud-saas.com/api/searchrecords/postSearchRecode?name='+vm.searchrecord[0].searchname+'&times='+times.toString()+'&id='+vm.searchrecord[0].id
+                            }, function(ret, err){
+                                console.log(JSON.stringify("更新成功"));
+                            })
+                        }
+                    })
+                },
+                searchclick:function(searchname){
+                    document.getElementById('data').value=searchname;
+                }
+            }
+        })
+    }
+</script> 
+
+</html>
+

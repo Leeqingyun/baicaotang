@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style>
+         body{
+            background-size: 100% 100%;
+            background-Repeat: no-repeat;
+            position: absolute;
+            bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-attachment: fixed;
+        }
+        .feeds{
+            display: none;
+        }
+        .feed{
+            background-color: rgb(247, 221, 150);
+            opacity: 0.8;
+            display:flex ;
+            height: 100px;
+            flex-direction: row;
+            border-bottom: 1px solid #e5e5e5;
+
+        }
+        .feed-left{
+            border-radius: 50%;
+		    overflow: hidden;
+            height: 90px;
+            width: 90px;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        .feed-main{
+            flex: 1;
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        .feed-right{
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            margin-top: 35px;
+            align-content: center;
+        }
+        .menu_name{
+
+            height: 40px;
+            font-size: 20px;
+            opacity:0.8;
+            flex-direction: row;
+            display:flex ;
+            border-bottom: 1px solid black;
+        }
+        .childmenu_name{
+            height: 30px; 
+            flex-direction: row;
+            display:flex ;
+            border-bottom: 1px solid black;
+
+        }
+        .menu_img{
+            width: 27px;
+            height: 27px;
+            margin-right: 10px;
+            margin-left: 10px;
+            margin-top: 5px;
+        }
+        .childmenu_img{
+            width: 20px;
+            height: 20px;
+            margin-left: 20px;
+            margin-top: 5px;
+            margin-right: 5px;
+        }
+        .childmenu_s{
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div  id="app">
+        <div class="menu" v-for="(menu,index) in classes" >
+            <div class="menu_name" @click="closechild(index)" >
+                <img class="menu_img" :id="gernerrateImgID(index)" src="../image/menu_img/down.png">
+                <p style="margin-top: 5px;">{{menu.name}}</p>
+            </div>
+            <div class="childmenu_s":id="getChildclassesID(index)">
+                <div class="childmenus" v-for="childmenus in childclasses" >
+                    <div class="childmenu" v-if="childmenus.fatherclass==index">
+                        <div class="childmenu_name" @click="close(index,childmenus.childclass_id)" >
+                            <img class="childmenu_img" style="height: 20px;width: 20px;" :id="getChildMenuImgID(index,childmenus.childclass_id)" src="../image/menu_img/childdown.png">
+                            <p style=" margin-left: 20px;font-size: 18px;">{{childmenus.name}}</p>
+                        </div>
+                        <div  class="feeds" :id="gernerrateID(index,childmenus.childclass_id)">
+                            <div  class="feedd" v-for="feedd in feeds"  @click="to(feedd)">
+                                <div class="feed" v-if="feedd.fatherclass==index && feedd.class==childmenus.childclass_id">
+                                    <img  class="feed-left" v-for="photo in feedd.photos" :src="photo" alt="">
+                                    <div class="feed-main">
+                                        <div class="feed-name" style="font-size: 25px;">{{feedd.name}}</div>
+                                        <div class="feed-content">功效：{{feedd.efficacy}}</div>
+                                    </div>
+                                    <img class="feed-right" src="../image/sc.png" alt="">
+                                </div>                     
+                            </div>      
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script src="../script/SHA1.js"></script>
+<script type="text/javascript">
+apiready = function() {
+        setInterval(switch_background, 5000);
+        initVue();
+        //databaseV1();
+    };
+    var images= [
+                 "../image/background/1.jpg", 
+                 "../image/background/2.jpg", 
+                 "../image/background/3.jpg",
+                 "../image/background/4.jpg",
+                 "../image/background/5.jpg",
+                 "../image/background/6.jpg"];
+    var indeximg = 0;
+    function switch_background(){ 
+        if(indeximg ==images.length-1)
+        {        
+            indeximg = 0;  
+        }else{   
+            indeximg++;      
+        }   
+        document.body.style.backgroundImage= "url(" +images[indeximg]+ ")" ;
+    }
+
+    var curIndex;
+    var feedss= new Array();
+    function initVue(){
+        vm=new Vue({
+            el:"#app",
+            data:{
+                feeds:[],
+                classes:[],
+                childclasses:[],
+            },
+            mounted:function(){
+                this.getDataV1();
+                this.getClasses();
+                this.getChildclasses();
+                //this.getDataV1byMcm();
+            },
+            methods:{
+                getClasses:function(){
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/fj_classes/getFjClass'
+                    }, function(ret, err){
+                        if(ret.code==0){
+                            vm.classes=ret.data;
+                        }
+                        else{
+                            api.toast(ret)
+                        }
+                    });
+                },
+                gernerrateID:function(index,childindex){
+                    return "feed_s"+index+childindex;
+                },
+                getChildclassesID:function(index){
+                    return "childmenu_sid"+index;
+                },
+                gernerrateImgID:function(index){
+                    return "menu_img"+index;
+                },
+                getChildMenuImgID:function(index,childindex){
+                    return "childmenu_img"+index+childindex;
+                },
+                gernerrateVfor:function(index){
+                    return "feed in feeds";
+                },
+                getChildclasses:function(){
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/fj_childclasses/getFjchildclass'
+                    }, function(ret, err){
+                        vm.childclasses=ret.data;
+                    })
+                },
+                getDataV1:function(){
+                api.ajax({
+                    url:'https://a6192799043919-dev.apicloud-saas.com/api/prescriptions/getPrescriptions'
+                    }, function(ret, err){
+                        console.log(JSON.stringify({ret, err}));
+                        if(ret.code==0){
+                            vm.feeds=ret.data;
+                        }
+                        else{
+                            api.toast(ret);
+                        }
+                    });
+                },                   
+                    close:function(index,childindex){
+                        var feed_number="feed_s"+index+childindex;
+                        var childmenu_imgnumber="childmenu_img"+index+childindex;
+                        var feed_s=document.getElementById(feed_number);
+                        if(feed_s.style.display=="none")
+                        {   
+                            feed_s.style.display="inline";
+                            document.getElementById(childmenu_imgnumber).src="../image/menu_img/childup.png"
+                        }
+                        else{
+                            feed_s.style.display="none";
+                            document.getElementById(childmenu_imgnumber).src="../image/menu_img/childdown.png"                           
+                        }                                               
+                    },
+                    closechild:function(index){
+                        curIndex=index;
+                        var childmenus_id="childmenu_sid"+index;
+                        var menu_imgnumber="menu_img"+index;
+                        var childmenus=document.getElementById(childmenus_id)
+                        if(childmenus.style.display=="none")
+                        {   
+                            childmenus.style.display="inline";
+                            document.getElementById(menu_imgnumber).src="../image/menu_img/up.png"
+                        }
+                        else{
+                            childmenus.style.display="none";
+                            document.getElementById(menu_imgnumber).src="../image/menu_img/down.png"
+                            
+                        }                                               
+                    },
+                   to: function(feedd){
+                        var user = {
+	                    name : feedd.name,
+                        id:feedd.id,
+                        }
+                        localStorage.setItem("user",JSON.stringify(user)); //需要先转换为JSON
+                        api.openTabLayout({
+                        name: feedd.name,
+                        url: './fjmain.html',
+                        title: feedd.name,
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }]
+                        }
+                    });
+                    }
+                },
+        })
+    }
+</script>
+
+</html>

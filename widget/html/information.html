@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style>
+        .nc,.zh{
+            border-bottom: 1px solid black;
+            border-top:1px solid black ;
+            height: 50px;
+            font-size: 20px;
+            margin-top: 1px;
+            flex-direction: row;
+            display: flex;
+        }
+        .ncimg,.zhimg{
+            height: 30px; 
+            width: 30px;
+            margin-top: 9px;
+            margin-left: 10px;
+        }
+        .name,.userid{
+            margin-top: 9px;
+            margin-left: 10px;
+        }
+        .footer{
+            flex-direction: row;
+            display: flex;
+            margin-top: 30px;
+        }
+        .footer-name,.footer-password{
+              height: 40px;
+              width: 50%;
+              border: 1px solid black;    
+              text-align: center;        
+              border-top-left-radius:15px; 
+              border-bottom-left-radius:15px;
+              border-top-right-radius:15px;
+              border-bottom-right-radius:15px;  
+              font-size: 25px;
+              color: rgb(252, 87, 87);     
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <img class="photo" src="">
+        <div class="nc" >
+            <img class="ncimg" src="../image/information/nc.png">
+            <div class="name">昵称：{{name}}</div>
+        </div>
+        <div class="zh" >
+            <img class="zhimg" src="../image/information/zh.png">
+            <div class="userid">账号：{{userID}}</div>
+        </div>
+        <div class="footer">
+            <div class="footer-name" @click="changeName()">修改昵称</div>
+            <div class="footer-password" @click="changePassword()">修改密码</div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    var name=localStorage.getItem("username");
+    var userID=localStorage.getItem("userID");
+    apiready = function() {
+        addNavClickSC();
+        initVue();
+    };
+    function addNavClickSC()
+    {
+        api.addEventListener({
+            name:'navitembtn'
+        },function(ret, err){
+            api.closeWin();
+            });
+    }
+    function initVue(){
+        vm = new Vue({
+            el: "#app",
+            data:
+            {
+            },
+            mounted:function(){
+            },
+            methods:{
+                changeName:function(){
+                    api.openTabLayout({
+                        name: "修改昵称",
+                        url: './changename.html',
+                        reload:true,
+                        title: "修改昵称",
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }]
+                            }
+                        });  
+                    },
+                changePassword:function(){
+                    api.openTabLayout({
+                        name: "修改密码",
+                        url: './changepassword.html',
+                        reload:true,
+                        title: "修改密码",
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }]
+                        }
+                    });  
+                },
+            }
+        });
+    }
+</script>
+
+</html>

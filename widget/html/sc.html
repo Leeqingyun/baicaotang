@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style>
+        .feed{
+            display:flex ;
+              height: 100px;
+              flex-direction: row;
+              border-bottom: 1px solid #e5e5e5;
+        }
+        .feed-main{
+            flex: 1;
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        .feed-right{
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            margin-top: 35px;
+            align-content: center;
+        }
+        .feed-left{
+            border-radius: 50%;
+		    overflow: hidden;
+            height: 90px;
+            width: 90px;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="top">
+
+        </div>
+    <div class="feeds">
+        <div class="feed" v-for="feed in feeds" @click="to(feed)">
+            <img class="feed-left" v-for="photo in feed.photos" :src="photo" alt="">
+            <div class="feed-main">
+                <div class="feed-name" style="font-size: 25px;">{{feed.name}}</div>
+                <div class="feed-content">功效：{{feed.efficacy}}</div>
+            </div>
+            <img class="feed-right" src="../image/sc.png" alt="">
+        </div>
+    </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script src="../script/SHA1.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        addNavClickSC();
+        setRefresher();
+        initVue();
+
+    };
+    //返回上层界面
+    function addNavClickSC()
+    {
+        api.addEventListener({
+            name:'navitembtn'
+        },function(ret, err){
+            api.closeWin();
+            });
+    }
+    function setRefresher(){
+        api.setRefreshHeaderInfo({
+        loadingImg: 'widget://image/refresh.png',
+        bgColor: '#ccc',
+        textColor: '#fff',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...'
+    }, function(ret, err) {
+    //在这里从服务器加载数据，加载完成后调用api.refreshHeaderLoadDone()方法恢复组件到默认状态
+    setTimeout(function(){
+        api.refreshHeaderLoadDone();
+        location.reload();
+    },500);
+    });
+    }
+    var user_id=localStorage.getItem("uid");
+    function initVue(){
+        vm=new Vue({
+            el:"#app",
+            data:{
+                feeds:[],
+                SClist:[],
+            },
+            mounted:function(){
+                this.getAllSC();
+            },
+            methods:{
+                getAllSC:function(){
+                    api.ajax({
+                    url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/findSCbyUID?user_id='+user_id
+                }, function(ret, err){
+                    var cyList=new Array();
+                    vm.SClist=ret.data;
+                    for(var i=0;i<vm.SClist.length;i++)
+                    {
+                        api.ajax({
+                            url:'https://a6192799043919-dev.apicloud-saas.com/api/feeds/getFeedByID?id='+vm.SClist[i].cy_id
+                        }, function(ret, err){
+                            vm.feeds.push(ret.data[0]);
+                            console.log(JSON.stringify(vm.feeds));
+                        })
+                    }
+                })
+                },
+                to: function(feedd){
+                        var user = {
+	                    name : feedd.name,
+                        id:feedd.id,
+                        }
+                        localStorage.setItem("user",JSON.stringify(user)); //需要先转换为JSON
+                        api.openTabLayout({
+                        name: feedd.name,
+                        url: './main.html',
+                        title: feedd.name,
+                        hideNavigationBar: false,
+                            navigationBar: {
+                            background: '#5082c2',
+                            color: '#fff',
+                            leftButtons: [{
+                                iconPath: '../image/arrow-left.png'
+                            }],
+                            rightButtons:[{
+                                iconPath: '../image/search.png'
+                            }]
+                        }
+                    });
+                    }
+            }
+        })
+    }
+</script>
+
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+      <style>
+         
+          body,html
+          {
+              height: 100%;
+              width: 100%; 
+              margin: 0;      
+              padding: 0;
+          }
+          #app{
+              height: 100%;
+              display: flex;
+              flex-direction: column;             
+          }
+          .main{
+              flex: 1;
+          }
+          .footer{
+              display:flex ;
+              height: 80px;
+              flex-direction: row;
+              background-color:#e5e5e5;
+          }
+          .tab-item{
+              flex: 1;
+              align-items: center;
+              display: flex;
+              flex-direction: column;
+              margin-top: 10px;
+              padding: 0;
+          }
+          .tab-item p {
+              font-size: 15px;
+              color: #666;
+          }
+          .tab-icon{
+              width: 35px;
+              height: 35px;
+              background-size: 35px;
+              align-items: center;
+          }
+          .tab-item p.active-p{
+              color:#32F2D9;
+          }
+          .header-content{
+              height: 60px;
+              background-color: #e5e5e5;
+              line-height: 44px;
+              font-size: 16px;
+              font-weight:bold;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+          }
+          .header_img{
+              height: 30px;
+              width: 30px;
+              margin-right:10px;
+          }
+          .header_main{
+             flex: 1;
+             font-size:30px;
+             margin-left: 50px;
+             text-align: center;
+          }
+
+      </style>
+  </head>
+  <body>
+    <div id="app">
+        <div class ="main"> 
+        </div>
+        <div class ="footer">  
+            <div class ="tab-item" v-for="(tab,index) in tabs" @click="setCurrent(index)">
+               <div class="tab-icon" :style="`background-image: url(../image/collection/icon_tab__${tab.icon}--${currentIndex==index?'active':'normal'}.png);`">
+               </div>
+                <p :class="currentIndex==index?'active-p':''">{{tab.name}}</p>            
+            </div>  
+        </div>
+    </div>
+
+  </body>
+  <script type="text/javascript" src="../script/vue.min.js"></script>
+  <script type="text/javascript">
+      var vm;
+      apiready = function()
+      {
+          initVue();
+          var userid=localStorage.getItem("uid");
+          if(userid=='')
+          { alert("尚未登录");api.closeWin();}
+      };
+      function initVue()
+      {
+          vm =new Vue(
+              {
+                  el:'#app',
+                  data:
+                {
+                      currentIndex:0,
+                      tabs:
+                      [
+                          {
+                              name:'草药',
+                              icon:'sc'
+                          },
+                          {
+                              name:'方剂',
+                              icon:'fjsc'
+                          },
+                      ],
+                      safeArea:
+                        {
+                          top:api.safeArea.top,
+                          bottom:api.safeArea.bottom
+                        }                     
+                    },
+                    mounted:function(){
+                        this.openFG();
+
+                    },
+                  methods:{
+                      setCurrent:function(index)
+                        {
+                          this.currentIndex=index;
+                          api.setFrameGroupIndex({
+                              name: 'SChome',
+                              index: index
+                          })
+                        }, 
+                        openFG:function()
+                        {
+                            var frames=this.tabs.map(function(tab){
+                                return {
+                                    name:tab.icon,
+                                    url:`../html/${tab.icon}.html`,
+                                    bgColor:'#fff'
+                                }
+                            });
+                            console.log(JSON.stringify(frames));
+                            api.openFrameGroup({
+                            name: 'SChome',
+                            rect: {
+                                    marginTop:60+api.safeArea.top,
+                                    marginBottom:80+api.safeArea.bottom
+                                },
+                            frames: frames
+                        }, function(ret, err) {
+                                vm.currentIndex = ret.index;
+                            });
+                    },               
+                },
+
+                  computed:{
+                      tabTitle:function(){
+                          return this.tabs[this.currentIndex].name;
+                      }
+                  }
+
+              }
+          );
+      }
+  </script>
+  </html>

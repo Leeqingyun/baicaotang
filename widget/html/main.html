@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style>
+        body{
+            background-color: white;
+            background-size: 100% 100%;
+            background-Repeat: no-repeat;
+            position: absolute;
+            bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-attachment: fixed;
+        }
+        .feed-img{
+            height: 200px;
+        }
+        .class-img{
+            align-items: center;
+        }
+        #SC{
+            display:flex ;
+            flex-direction: row;
+            width: 150px;
+            height: 50px;
+            background-color:rgb(191, 199, 247);
+            border: 1px solid black;
+            border-top-left-radius:10px; 
+            border-bottom-left-radius:10px;
+            border-top-right-radius:10px;
+            border-bottom-right-radius:10px; 
+            right: 0px;
+            text-align: center;
+            float: right;
+            margin-right: 15px;
+        }
+        .SCimg{
+            height: 50px;
+            width: 50px;
+            
+        }
+        .buttonSC{
+            width: 80%;
+            height: 40px;
+            -webkit-border-radius:6px;/*适配以webkit为核心的浏览器(chrome、safari等)*/
+            -moz-border-radius:6px;/*适配firefox浏览器*/
+            -ms-border-radius:6px;/*适配IE浏览器*/
+            -o-border-radius:6px;/*适配opera浏览器*/
+            border-radius:6px;/*适配所有浏览器*/
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="feed" v-for="feed in feeds">
+            <div style="text-align: center; width: 500px;padding-top: 10px;" >
+                <img style="margin: 0 auto;" class="feed-img":src="feed.photos[0]" alt=""> 
+            </div>
+            <div id="SC">
+                <div class="SCimg":style="`background-image: url(../image/collection/${ifSC=='0'?'no':'yes'}.png);`"></div>                
+                <div  @click="inSC()" class="buttonSC" style="font-size: 20px;margin-top: 10px;">{{informationSC}}</div>
+            </div>
+            <div style="font-size: 25px;margin-left: 15px;">药名</div>
+            <div class="title" style="margin-left: 15px;">{{feed.name}}（别名：{{feed.alias}}）</div>
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">性味归经</div>
+            <div style="margin-left: 15px;">{{feed.taste}}</div>
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">功效</div>
+            <div style="margin-left: 15px;">{{feed.efficacy}}</div>            
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">主治</div>
+            <div class="attend" v-for="attend in feed.attending" style="margin-left: 15px; margin-right: 15px;">{{attend}}</div>            
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">用法</div>
+            <div style="margin-left: 15px;">{{feed.usage}}</div>
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">炮制方法</div>   
+            <div style="margin-left: 15px;">{{feed.production}}</div>         
+            <div style="font-size: 25px;margin-left: 15px;padding-top: 20px;">附注</div>   
+            <div class="not" v-for="not in feed.note"style="margin-left: 15px; margin-right: 15px;">{{not}}</div>
+            <div style="height: 40px;">  </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        initVue();
+        addNavClickSC();
+    };
+        var user = localStorage.getItem("user"); 
+        user = JSON.parse(user);
+        var name = user.name;
+        var cy_id=user.id;
+        var user_id=localStorage.getItem("uid");
+        function addNavClickSC()
+        {
+        api.addEventListener({
+            name:'navitembtn'
+        },function(ret, err){
+            api.closeWin();
+            localStorage.removeItem("user");
+            });
+        }
+    function initVue(){
+        vm=new Vue({
+            el:"#app",
+            data:{
+                feeds:[],
+                informationSC:'',
+                ifSC:'',
+            },
+            mounted:function(){
+                this.getFeedByid(cy_id);
+                this.initSC();
+            },
+            methods:{
+                getFeedByid:function(cy_id){
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/feeds/getFeedByID?id='+cy_id
+                    }, function(ret, err){
+                        if(ret.code==0){
+                            vm.feeds=ret.data;
+                        }
+                        else{
+                            alert('没有这种药喔')
+                        }
+                       // localStorage.removeItem("user");
+                    })
+                },
+                initSC:function(){
+                    api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/findSC?user_id='+user_id+'&cy_id='+cy_id
+                    }, function(ret, err){
+                            if(ret.msg=='该草药未收藏')
+                            {
+                                vm.ifSC="0";
+                                vm.informationSC="加入收藏";
+                                //document.getElementById("SCimg").src="../image/collection/noSC.png"
+                            }
+                            else
+                            {
+                                vm.ifSC="1";
+                                vm.informationSC="取消收藏";
+                                //document.getElementById("SCimg").src="../image/collection/yesSC.png";
+                            }
+                        })
+                },
+                inSC:function(){
+                    if(user_id=="")
+                    {
+                        alert("请先进行登录");
+                    }
+                    else{
+                        api.ajax({
+                        url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/findSC?user_id='+user_id+'&cy_id='+cy_id
+                    }, function(ret, err){
+                        if(ret.msg=='该草药未收藏')
+                        {
+                            api.ajax({
+                            url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/createSC?user_id='+user_id +'&cy_id='+cy_id
+                        }, function(ret, err){
+                            alert(ret.msg);
+                            location.reload();
+                        });
+                        }
+                        else
+                        {
+                            api.ajax({
+                                url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/findSC?user_id='+user_id+'&cy_id='+cy_id
+                            }, function(ret, err){
+                                var sc_id=ret.data[0].id;
+                                api.ajax({
+                                    url:'https://a6192799043919-dev.apicloud-saas.com/api/cy_scs/deleteSC?id='+sc_id
+                                }, function(ret, err){
+                                    alert(ret.msg);
+                                    location.reload();
+                                })
+                            })
+                        }
+                    })
+                    }
+                }
+
+            }
+        });
+}
+</script>
+
+</html>
